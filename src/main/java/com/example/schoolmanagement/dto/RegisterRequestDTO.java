@@ -11,11 +11,9 @@ public class RegisterRequestDTO {
     private String password;
     private Role role;
 
-    // Student için gerekli alanlar
     private String studentClass;
-    private Long teacherId;  // Öğrencinin öğretmeni olacak kişinin ID'si
+    private Long teacherId;
 
-    // Teacher için gerekli alanlar
     private Branch branch;
 
     public RegisterRequestDTO() {

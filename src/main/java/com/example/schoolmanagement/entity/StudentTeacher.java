@@ -10,11 +10,11 @@ public class StudentTeacher {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "student_id")  // Öğrencinin ID'sine referans
+    @JoinColumn(name = "student_id")
     private Student student;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_id")  // Öğretmenin ID'sine referans
+    @JoinColumn(name = "teacher_id")
     private Teacher teacher;
 
     public StudentTeacher(Long id, Student student, Teacher teacher) {

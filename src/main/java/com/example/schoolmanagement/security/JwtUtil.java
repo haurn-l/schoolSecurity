@@ -10,7 +10,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -93,35 +92,5 @@ public class JwtUtil {
     public boolean isTokenValid(String token, String username) {
         String tokenUsername = extractUsername(token);
         return (tokenUsername.equals(username) && !isTokenExpired(token));
-    }
-
-    // Redis işlemleri
-    public void storeRefreshToken(String username, String refreshToken) {
-        try {
-            redisTemplate.opsForValue().set(
-                username + ":refreshToken", 
-                refreshToken, 
-                refreshTokenExpirationInMs, 
-                TimeUnit.MILLISECONDS
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Redis'e token kaydedilemedi: " + e.getMessage());
-        }
-    }
-
-    public String getRefreshTokenFromRedis(String username) {
-        try {
-            return redisTemplate.opsForValue().get(username + ":refreshToken");
-        } catch (Exception e) {
-            throw new RuntimeException("Redis'ten token alınamadı: " + e.getMessage());
-        }
-    }
-
-    public void invalidateRefreshToken(String username) {
-        try {
-            redisTemplate.delete(username + ":refreshToken");
-        } catch (Exception e) {
-            throw new RuntimeException("Redis'ten token silinemedi: " + e.getMessage());
-        }
     }
 }

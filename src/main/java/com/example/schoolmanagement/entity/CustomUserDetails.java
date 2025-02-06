@@ -15,8 +15,7 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(User user) {
         this.username = user.getUsername();
         this.password = user.getPassword();
-        // Tek bir rol olduğu için direk olarak authorities listesine ekliyoruz
-        this.authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())); // ROLE_ ekleme!
+        this.authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override

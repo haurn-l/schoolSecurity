@@ -13,14 +13,13 @@ import com.example.schoolmanagement.repository.TeacherRepository;
 import com.example.schoolmanagement.repository.UserRepository;
 import com.example.schoolmanagement.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -28,16 +27,16 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthService {
     @Autowired
-     AuthenticationManager authenticationManager;
+    AuthenticationManager authenticationManager;
 
     @Autowired
-     UserRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
-     JwtUtil jwtUtil;
+    JwtUtil jwtUtil;
 
     @Autowired
-     RedisTemplate<String, String> redisTemplate;
+    RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     StudentRepository studentRepository;
@@ -50,27 +49,22 @@ public class AuthService {
     PasswordEncoder passwordEncoder;
 
     public String register(RegisterRequestDTO request) {
-        // Kullanıcı adı kontrolü
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new CustomException("Bu kullanıcı adı zaten kullanılıyor!");
+            throw new CustomException("Bu kullanıcı adı zaten kullanılıyor!", HttpStatus.CONFLICT);
         }
-
-        // Yeni kullanıcı oluştur
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode( request.getPassword() )); // Şifre şifrelenmeyecek
+        user.setPassword(passwordEncoder.encode( request.getPassword() ));
         user.setRole(request.getRole());
         userRepository.save(user);
 
-        // Kullanıcının rolüne göre işlem yap
         switch (request.getRole()) {
             case STUDENT -> registerStudent(request, user);
             case TEACHER -> registerTeacher(request, user);
             case MANAGER -> registerManager(request, user);
-            default -> throw new CustomException("Geçersiz rol!");
+            default -> throw new CustomException("Geçersiz rol!", HttpStatus.BAD_REQUEST);
         }
-
-        return "Kayıt başarılı! " + request.getRole() + " rolüyle hesap oluşturuldu.";
+        return "Kayıt başarılı! " + request.getRole() + " rolüyle hesap oluşturuldu."+HttpStatus.OK;
     }
 
     private void registerStudent(RegisterRequestDTO request, User user) {
@@ -80,11 +74,10 @@ public class AuthService {
         student.setStudentClass(request.getStudentClass());
         student.setUser(user);
 
-        // Öğretmen ID kontrolü
         if (request.getTeacherId() != null) {
             Optional<Teacher> teacher = teacherRepository.findById(request.getTeacherId());
             teacher.ifPresentOrElse(student::setTeacher,
-                    () -> { throw new CustomException("Öğretmen bulunamadı!"); });
+                    () -> { throw new CustomException("Öğretmen bulunamadı!", HttpStatus.NOT_FOUND); });
         }
 
         studentRepository.save(student);
@@ -94,7 +87,7 @@ public class AuthService {
         Teacher teacher = new Teacher();
         teacher.setName(request.getName());
         teacher.setSurname(request.getSurname());
-        teacher.setBranch(request.getBranch()); // Branşı DTO'dan alıyor
+        teacher.setBranch(request.getBranch());
         teacher.setUser(user);
         teacherRepository.save(teacher);
     }
@@ -116,7 +109,7 @@ public class AuthService {
         if (authentication.isAuthenticated()) {
 
             User user = userRepository.findByUsernameAndRole(request.getUsername(), request.getRole())
-                    .orElseThrow(() -> new CustomException("Kullanıcı bulunamadı veya rol hatalı!"));
+                    .orElseThrow(() -> new CustomException("Kullanıcı bulunamadı veya rol hatalı!", HttpStatus.BAD_REQUEST));
 
             String accessToken = jwtUtil.generateAccessToken(user.getUsername(),user.getRole().name());
             String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(),user.getRole().name());
@@ -126,7 +119,7 @@ public class AuthService {
 
             return new AuthResponseDTO(accessToken, refreshToken);
         } else {
-            throw new CustomException("Geçersiz kimlik bilgileri!");
+            throw new CustomException("Geçersiz kimlik bilgileri!", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -141,16 +134,16 @@ public class AuthService {
 
             // 3. Token kontrollerini yap
             if (storedToken == null) {
-                throw new CustomException("Refresh token bulunamadı. Lütfen tekrar giriş yapın.");
+                throw new CustomException("Refresh token bulunamadı. Lütfen tekrar giriş yapın.", HttpStatus.NOT_FOUND);
             }
             
             if (!storedToken.equals(refreshToken)) {
-                throw new CustomException("Geçersiz refresh token.");
+                throw new CustomException("Geçersiz refresh token.", HttpStatus.NOT_FOUND);
             }
             
             if (jwtUtil.isRefreshTokenExpired(refreshToken)) {
                 invalidateRefreshToken(username); // Süresi dolmuş token'ı Redis'ten sil
-                throw new CustomException("Refresh token süresi dolmuş. Lütfen tekrar giriş yapın.");
+                throw new CustomException("Refresh token süresi dolmuş. Lütfen tekrar giriş yapın.", HttpStatus.UNAUTHORIZED);
             }
 
             // 4. Yeni access token oluştur
@@ -164,7 +157,7 @@ public class AuthService {
             // 6. Yeni token'ları dön
             return new RefreshTokenResponseDTO(newAccessToken, newRefreshToken);
         } catch (Exception e) {
-            throw new CustomException("Token yenileme işlemi başarısız: " + e.getMessage());
+            throw new CustomException("Token yenileme işlemi başarısız: " + e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -185,7 +178,7 @@ public class AuthService {
             String username = jwtUtil.extractUsername(accessToken);
             invalidateRefreshToken(username);
         } catch (Exception e) {
-            throw new CustomException("Çıkış işlemi sırasında hata oluştu: " + e.getMessage());
+            throw new CustomException("Çıkış işlemi sırasında hata oluştu: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
