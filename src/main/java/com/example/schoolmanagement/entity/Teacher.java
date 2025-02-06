@@ -40,7 +40,6 @@ public class Teacher {
         this.user = user;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

@@ -14,7 +14,4 @@ public class RefreshTokenRequestDTO {
     public RefreshTokenRequestDTO() {
     }
 
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
 }
