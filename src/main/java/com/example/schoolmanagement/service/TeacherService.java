@@ -37,10 +37,11 @@ public class TeacherService {
 
         return teacher.getStudents().stream()
                 .map(student -> new StudentDTO(
+                        student.getId(),
                         student.getName(),
                         student.getSurname(),
                         student.getStudentClass(),
-                        teacher.getName() // öğretmen adı
+                        teacher.getName()
                 ))
                 .collect(Collectors.toList());
     }
