@@ -30,7 +30,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // CSRF korumasını devre dışı bırakıyoruz
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/auth/register","/auth/refresh", "/auth/login", "/error").permitAll()  // Herkese açık URL'ler
+                        .requestMatchers("/auth/register", "/auth/login", "/error").permitAll()
+                        .requestMatchers("/auth/refresh","auth/logout").hasAnyRole("STUDENT","TEACHER","MANAGER")// Herkese açık URL'ler
                         .requestMatchers("/students/**").hasRole("STUDENT")
                         .requestMatchers("/teachers/**").hasRole("TEACHER")
                         .requestMatchers("/managers/**").hasRole("MANAGER") // Yöneticiye özel URL'ler

@@ -29,9 +29,10 @@ public class AuthController {
         return authService.refreshAccessToken(request.getRefreshToken());
     }
 
-    // Logout endpoint
-    public String logout(@RequestBody LogoutRequestDTO logoutRequest) {
-        authService.logout(logoutRequest.getAccessToken());
-        return "Başarıyla çıkış yapıldı, refresh token silindi.";
+    @PostMapping("/logout")
+    public String logout(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        authService.logout(token);
+        return "Başarıyla çıkış yapıldı";
     }
 }

@@ -1,21 +1,18 @@
 package com.example.schoolmanagement.exception;
 
 import org.springframework.http.HttpStatus;
+import lombok.Getter;
 
+@Getter
 public class CustomException extends RuntimeException {
-    private String message;
+    private final HttpStatus status;
 
-    public CustomException(String message, HttpStatus notFound) {
+    public CustomException(String message, HttpStatus status) {
         super(message);
-        this.message = message;
+        this.status = status;
     }
 
     public CustomException(String message) {
-        this.message=message;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
+        this(message, HttpStatus.BAD_REQUEST);
     }
 }
