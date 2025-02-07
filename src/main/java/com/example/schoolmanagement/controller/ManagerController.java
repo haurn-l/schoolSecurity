@@ -19,7 +19,6 @@ public class ManagerController {
     @Autowired
     private ManagerService managerService;
 
-    // Öğrenci işlemleri
     @GetMapping("/students")
     public ResponseEntity<List<StudentDTO>> getAllStudents() {
         return ResponseEntity.ok(managerService.getAllStudents());
@@ -31,20 +30,15 @@ public class ManagerController {
     }
 
     @PutMapping("/students/{studentId}/class")
-    public ResponseEntity<StudentDetailDTO> updateStudentClass(
-            @PathVariable Long studentId,
-            @RequestParam String newClass) {
+    public ResponseEntity<StudentDetailDTO> updateStudentClass(@PathVariable Long studentId, @RequestParam String newClass) {
         return ResponseEntity.ok(managerService.updateStudentClass(studentId, newClass));
     }
 
     @PutMapping("/students/{studentId}/teacher")
-    public ResponseEntity<StudentDetailDTO> updateStudentTeacher(
-            @PathVariable Long studentId,
-            @RequestParam Long newTeacherId) {
+    public ResponseEntity<StudentDetailDTO> updateStudentTeacher(@PathVariable Long studentId, @RequestParam Long newTeacherId) {
         return ResponseEntity.ok(managerService.updateStudentTeacher(studentId, newTeacherId));
     }
 
-    // Öğretmen işlemleri
     @GetMapping("/teachers")
     public ResponseEntity<List<TeacherDetailDTO>> getAllTeachers() {
         return ResponseEntity.ok(managerService.getAllTeachers());
