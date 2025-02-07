@@ -11,7 +11,7 @@ import org.springframework.cache.annotation.EnableCaching;
 @Configuration
 @EnableCaching
 public class RedisConfig {
-    
+
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
@@ -19,7 +19,7 @@ public class RedisConfig {
         config.setPort(6379);
         return new LettuceConnectionFactory(config);
     }
-    
+
     @Bean
     public RedisTemplate<String, String> redisTemplate() {
         RedisTemplate<String, String> template = new RedisTemplate<>();
